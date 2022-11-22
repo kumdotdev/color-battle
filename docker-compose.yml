@@ -1,0 +1,9 @@
+services:
+  node:
+    image: "node:alpine"
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+    command: sh -cx "npm install && npm run dev"
+    ports:
+      - 9000:9000
