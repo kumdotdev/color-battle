@@ -1,13 +1,11 @@
 services:
   node:
-    image: "node:alpine"
-    working_dir: /home/node/app
+    build: 
+      context: .
+      target: production
     volumes:
-      - ./:/home/node/app
-    environment:
-      - WS_SERVER_PORT=9000
-      - EXPRESS_SERVER_PORT=3456
-    command: sh -cx "npm ci && node server/index.js"
+      - ./:/app
+      - /app/node_modules
     ports:
-      - 9000:9000
-      - 3456:3456
+      - 9090:9000
+      - 3333:3000
