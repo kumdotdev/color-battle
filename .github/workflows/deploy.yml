@@ -26,4 +26,5 @@ jobs:
           PASSWORD: ${{ secrets.SSH_PASSWORD }}
           script: |
             cd ${{ github.event.repository.name }}
+            docker system prune -f
             docker compose up -d --build
