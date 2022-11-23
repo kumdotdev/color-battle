@@ -4,6 +4,10 @@ services:
     working_dir: /home/node/app
     volumes:
       - ./:/home/node/app
+    environment:
+      - WS_SERVER_PORT=9000
+      - EXPRESS_SERVER_PORT=3456
     command: sh -cx "npm install && npm run dev"
     ports:
       - 9000:9000
+      - 3456:3456

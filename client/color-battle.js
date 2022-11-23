@@ -106,7 +106,7 @@ class ColorBattle extends LitElement {
     return html`
       <div class="overlay">
         <div>
-          <p>Player has landed. Get Ready ...</p>
+          <p>New Game Starting. Get Ready ...</p>
           <h1 class="opacity-1">${this.state.countdown}</h1>
         </div>
       </div>

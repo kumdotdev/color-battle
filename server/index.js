@@ -1,9 +1,17 @@
-const WebsocketServer = require('ws').Server;
+const process = require('process');
+const express = require('express');
+const ws = require('ws');
 const Session = require('./session');
 const Client = require('./client');
 const Game = require('./game');
 
-const server = new WebsocketServer({ port: 9000 });
+const server = new ws.Server({ port: process.env.WS_SERVER_PORT || 9000 });
+const app = express();
+app.use(express.static('client'));
+const appServer = app.listen(process.env.EXPRESS_SERVER_PORT);
+console.log('Server listen on port ', process.env.EXPRESS_SERVER_PORT);
+console.log('WS listen on port ', process.env.WS_SERVER_PORT);
+
 const sessions = new Map();
 const games = new Map();
 
@@ -88,7 +96,7 @@ server.on('connection', (ws) => {
       const session = getSession(data.id);
       const game = getGame(session.id);
       game.checkAnswer(data.index);
-    }else if (data.type === 'reset') {
+    } else if (data.type === 'reset') {
       const session = getSession(data.id);
       const game = getGame(session.id);
       game.reset();
