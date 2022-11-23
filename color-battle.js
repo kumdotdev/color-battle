@@ -1,12 +1,15 @@
-import { css, html, LitElement } from 'https://cdn.skypack.dev/lit?min';
+import { html, LitElement } from 'https://cdn.skypack.dev/lit?min';
 import canvasConfetti from 'https://cdn.skypack.dev/canvas-confetti';
+import { myStyles } from './styles.js';
 
-const { random, floor } = Math;
+const { floor } = Math;
 
 const confetti = document.createElement('canvas');
 const myConfetti = canvasConfetti.create(confetti, { resize: true });
 
 class ColorBattle extends LitElement {
+  static styles = [myStyles];
+
   static get properties() {
     return {
       state: { type: Object },
@@ -36,7 +39,7 @@ class ColorBattle extends LitElement {
 
   receive(msg) {
     const data = JSON.parse(msg);
-    console.log('Recevied data', data);
+    // console.log('Recevied data', data);
     if (data.type === 'session-created') {
       window.location.hash = data.id;
     }
@@ -62,140 +65,81 @@ class ColorBattle extends LitElement {
 
   send(data) {
     const message = JSON.stringify(data);
-    console.log(`Sending message ${message}`);
+    // console.log(`Sending message ${message}`);
     this.connection.send(message);
   }
 
   setState(newState) {
     this.state = { ...this.state, ...newState };
-    console.log('State: ', this.state);
+    if (this.state.isGameOver && this.state.correct / this.state.count === 1)
+      myConfetti();
+    // console.log('State ', this.state);
   }
 
-  _handleClick(event) {
-    this.send({type: 'answer', id: this.state.session, color: event.target.getAttribute('data-color')});
+  _handleClick(event, index) {
+    this.send({
+      type: 'answer',
+      id: this.state.session,
+      index,
+    });
+  }
+
+  _handleReset(event) {
+    this.send({
+      type: 'reset',
+      id: this.state.session,
+    });
+  }
+
+  intro() {
+    return html`
+      <div class="overlay">
+        <div>
+          <p>Waiting for player ... Your session:</p>
+          <h1 class="opacity-1">${this.state.session}</h1>
+        </div>
+      </div>
+    `;
+  }
+
+  countdown() {
+    return html`
+      <div class="overlay">
+        <div>
+          <p>Player has landed. Get Ready ...</p>
+          <h1 class="opacity-1">${this.state.countdown}</h1>
+        </div>
+      </div>
+    `;
+  }
+
+  outro() {
+    return html`
+      <div class="overlay">
+        <div>
+          <p>Your Result</p>
+          <h1 class="opacity-1">
+            ${floor((this.state.correct / this.state.count) * 100)}%<br />
+          </h1>
+          <button @click=${this._handleReset}>Start new Game</button>
+        </div>
+      </div>
+    `;
   }
 
   render() {
     if (this.state.peers?.clients?.length <= 1) {
-      return html`<h2>Your session is: ${this.state.session} Waiting for player ...</h2>`;
+      return this.intro();
     }
+
+    if (this.state.countdown > 0) {
+      return this.countdown();
+    }
+
     return html`
-      <style>
-        :host {
-          --hue: 220;
-          --saturation: 10%;
-          --lightness: 80%;
-          font-family: system-ui, sans-serif;
-          color: hsl(
-            var(--hue),
-            var(--saturation),
-            calc(var(--lightness) - 30%)
-          );
-          min-height: 100vh;
-          display: grid;
-          gap: 1rem;
-          grid-template-columns: repeat(3, 1fr);
-          grid-template-rows: auto 1fr;
-          background-color: hsl(var(--hue), var(--saturation), 10%);
-        }
-        header {
-          text-align: center;
-          grid-column: 1 / span 3;
-          justify-self: center;
-          padding-top: 1rem;
-        }
-        h1 {
-          margin: 0.2em 0 0.3em;
-          line-height: 1;
-          font-weight: 700;
-          font-size: 7vw;
-          color: hsl(
-            var(--hue),
-            var(--saturation),
-            calc(var(--lightness) - 50%)
-          );
-        }
-        .intro {
-          font-size: 1.2rem;
-          margin: 0.3em 0;
-          text-transform: uppercase;
-          letter-spacing: 0.3rem;
-        }
-        .opacity-1 {
-          color: hsl(var(--hue), var(--saturation), var(--lightness));
-        }
-        .color {
-          cursor: pointer;
-          transition: transform 0.1s ease-in-out;
-          transform: scale(0.95);
-          border: 1px solid
-            hsl(var(--hue), var(--saturation), calc(var(--lightness) / 2));
-        }
-        .color:hover {
-          transform: scale(1);
-        }
-        .indicator {
-          position: fixed;
-          top: 0;
-          left: 0;
-          height: 4px;
-          width: 100vw;
-          transition: transform 0.6s ease-out;
-          transform-origin: left;
-          background-color: hsl(
-            var(--hue),
-            var(--saturation),
-            var(--lightness)
-          );
-          transform: scale(0, 1);
-          z-index: 2;
-        }
-        .overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background-color: hsla(var(--hue), var(--saturation), 10%, 94%);
-          display: grid;
-          place-items: center;
-          text-align: center;
-        }
-        .overlay > div {
-          padding-bottom: 10vh;
-        }
-        button {
-          background-color: transparent;
-          color: hsl(var(--hue), var(--saturation), var(--lightness));
-          border: 1px solid hsl(var(--hue), var(--saturation), var(--lightness));
-          text-transform: uppercase;
-          letter-spacing: 0.2rem;
-          font-size: 1rem;
-          padding: 1rem 2rem;
-          cursor: pointer;
-          transition: 0.3s;
-        }
-        button:hover {
-          background-color: hsla(
-            var(--hue),
-            var(--saturation),
-            var(--lightness),
-            15%
-          );
-        }
-        canvas {
-          display: block;
-          position: fixed;
-          z-index: 3;
-          pointer-events: none;
-        }
-      </style>
       ${confetti}
       <header>
-        <p class="introxxx">
-          Guess the color! Clients:
-          ${this.state.peers?.clients?.map((client) => html`${client} `)}
-        </p>
+        <p class="intro_">Guess the color!</p>
         <h1>
           HSL(<span class="opacity-1">${this.state.color?.[0]}</span>,
           <span class="opacity-1">${this.state.color?.[1]}</span>%,
@@ -207,29 +151,18 @@ class ColorBattle extends LitElement {
           style="transform:scale(${this.state.correct / this.state.count},1)"
         ></span>
       </header>
-      ${this.state.colors?.map(
-        (color) => html`
-          <span
-            class="color"
-            data-color=${color}
-            @click=${this._handleClick}
-            style="background-color: hsl(${color[0]},${color[1]}%,${color[2]}%)"
-          ></span>
-        `
-      )}
-      ${this.state.isGameOver
-        ? html`
-            <div class="overlay">
-              <div>
-                <p class="intro">Your Result</p>
-                <h1 class="opacity-1">
-                  ${floor((this.state.correct / this.state.count) * 100)}%<br />
-                </h1>
-                <button @click=${this.reset}>Start new Game</button>
-              </div>
-            </div>
-          `
-        : ''}
+      <div style="display:grid;grid-auto-flow:column">
+        ${this.state.colors?.map(
+          (color, index) => html`
+            <span
+              class="color"
+              @click=${(event) => this._handleClick(event, index)}
+              style="background-color: hsl(${color[0]},${color[1]}%,${color[2]}%)"
+            ></span>
+          `,
+        )}
+      </div>
+      ${this.state.isGameOver ? this.outro() : ''}
     `;
   }
 }

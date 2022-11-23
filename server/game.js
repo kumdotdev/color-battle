@@ -5,8 +5,8 @@ const INITIAL_STATE = {
   colors: [],
   color: [],
   isGameOver: false,
-  peers: [],
   maxQuestions: 3,
+  countdown: 5,
 };
 
 class Game {
@@ -14,10 +14,17 @@ class Game {
     this.session = session;
     this.state = {};
     this.reset();
+    this.broadcastGameState();
+
+    const interval = setInterval(() => {
+      this.setState({
+        countdown: this.state.countdown > 0 ? this.state.countdown - 1 : 0,
+      });
+    }, 1000);
   }
 
-  broadcastGameState(session) {
-    const clients = [...session.clients];
+  broadcastGameState() {
+    const clients = [...this.session.clients];
     clients.forEach((client) => {
       client.send({
         type: 'game-state',
@@ -26,8 +33,8 @@ class Game {
     });
   }
 
-  checkAnswer(color) {
-    if (color === this.state.color.toString()) {
+  checkAnswer(index) {
+    if (index === this.state.colors.indexOf(this.state.color)) {
       this.setState({
         count: this.state.count + 1,
         correct: this.state.correct + 1,
@@ -38,7 +45,7 @@ class Game {
         });
       } else {
         this.setState({
-          ...this.createQuestion(),
+          ...this.getQuestion(),
         });
       }
     } else {
@@ -46,7 +53,7 @@ class Game {
     }
   }
 
-  createQuestion() {
+  getQuestion() {
     const colors = [
       this.randomColorData(),
       this.randomColorData(),
@@ -66,7 +73,7 @@ class Game {
 
   reset() {
     this.setState(INITIAL_STATE);
-    this.setState(this.createQuestion());
+    this.setState(this.getQuestion());
   }
 
   setState(newState) {
