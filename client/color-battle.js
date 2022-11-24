@@ -24,7 +24,7 @@ class ColorBattle extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // const url = 'ws://localhost:9000';
-    const url = 'ws://ws.color-battle.kum.rocks:9090/';
+    const url = 'wss://color-battle.kum.rocks/ws';
     this.connection = new WebSocket(url);
 
     this.connection.onopen = () => {
