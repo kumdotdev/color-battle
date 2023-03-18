@@ -3,7 +3,6 @@ import canvasConfetti from 'https://cdn.skypack.dev/canvas-confetti';
 import { myStyles } from './styles.js';
 
 const { floor } = Math;
-
 const confetti = document.createElement('canvas');
 const myConfetti = canvasConfetti.create(confetti, { resize: true });
 
@@ -28,7 +27,7 @@ class ColorBattle extends LitElement {
     this.connection = new WebSocket(url);
 
     this.connection.onopen = () => {
-      console.log('socket opend');
+      // console.log('socket opend');
       this.initSession();
     };
 
@@ -73,7 +72,6 @@ class ColorBattle extends LitElement {
     this.state = { ...this.state, ...newState };
     if (this.state.isGameOver && this.state.correct / this.state.count === 1)
       myConfetti();
-    // console.log('State ', this.state);
   }
 
   _handleClick(event, index) {
@@ -91,12 +89,24 @@ class ColorBattle extends LitElement {
     });
   }
 
+  _handleChoosePlayMode(mode) {
+    this.send({
+      type: 'play-mode',
+      id: this.state.session,
+      mode,
+    });
+  }
+
   intro() {
     return html`
       <div class="overlay">
         <div>
           <p>Waiting for player ... Your session:</p>
-          <h1 class="opacity-1">${this.state.session}</h1>
+          <h1 
+            style="font-family: monospace"
+            class="opacity-1">${this.state.session}</h1>
+            <p>Copy this link:</p>
+            <p>${location.origin}/#${this.state.session}</p>
         </div>
       </div>
     `;
@@ -128,7 +138,22 @@ class ColorBattle extends LitElement {
   }
 
   render() {
-    if (this.state.peers?.clients?.length <= 1) {
+    if (this.state.status === 'idle') {
+      return html`
+        <div style="min-height:100dvh;display:grid;place-content:center">
+          Loading ...
+        </div>
+      `;
+    }
+    if (this.state.status === 'choose-mode') {
+      return html`
+        <div style="min-height:100dvh;display:grid;place-content:center">
+         <button @click=${()=>this._handleChoosePlayMode('single')}>Singleplayer</button>
+         <button @click=${()=>this._handleChoosePlayMode('multi')}>Multiplayer</button>
+        </div>
+      `;
+    }
+    if (this.state.mode === 'multi' && this.state.peers?.clients?.length <= 1) {
       return this.intro();
     }
 
@@ -139,7 +164,7 @@ class ColorBattle extends LitElement {
     return html`
       ${confetti}
       <header>
-        <p class="intro_">Guess the color!</p>
+        <p>Guess the color!</p>
         <h1>
           HSL(<span class="opacity-1">${this.state.color?.[0]}</span>,
           <span class="opacity-1">${this.state.color?.[1]}</span>%,

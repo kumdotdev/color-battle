@@ -1,4 +1,5 @@
 const { random, floor } = Math;
+const COUNTDOWN_SECONDS = 5;
 const INITIAL_STATE = {
   count: 0,
   correct: 0,
@@ -6,7 +7,9 @@ const INITIAL_STATE = {
   color: [],
   isGameOver: false,
   maxQuestions: 3,
-  countdown: 5,
+  countdown: COUNTDOWN_SECONDS,
+  status: 'choose-mode',
+  mode: '',
 };
 
 class Game {
@@ -15,12 +18,7 @@ class Game {
     this.state = {};
     this.reset();
     this.broadcastGameState();
-
-    const interval = setInterval(() => {
-      this.setState({
-        countdown: this.state.countdown > 0 ? this.state.countdown - 1 : 0,
-      });
-    }, 1000);
+    this.interval;
   }
 
   broadcastGameState() {
@@ -31,6 +29,17 @@ class Game {
         state: this.state,
       });
     });
+  }
+
+  setMode(mode) {
+    this.setState({mode: mode, status: 'play', countdown: COUNTDOWN_SECONDS});
+    clearInterval(this.interval);
+    this.interval = setInterval(() => {
+      this.setState({
+        countdown: this.state.countdown > 0 ? this.state.countdown - 1 : 0,
+      });
+    }, 1000);
+    //console.log(this.state);
   }
 
   checkAnswer(index) {

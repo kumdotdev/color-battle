@@ -100,6 +100,10 @@ server.on('connection', (ws) => {
       const session = getSession(data.id);
       const game = getGame(session.id);
       game.reset();
+    } else if (data.type === 'play-mode') {
+      const session = getSession(data.id);
+      const game = getGame(session.id);
+      game.setMode(data.mode);
     }
 
     // console.log('Sessions', sessions);
