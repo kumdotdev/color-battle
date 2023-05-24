@@ -4,6 +4,7 @@ services:
     build: 
       context: .
       target: production
+    restart: unless-stopped
     volumes:
       - ./:/app
       - /app/node_modules
