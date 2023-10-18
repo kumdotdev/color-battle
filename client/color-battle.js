@@ -1,4 +1,4 @@
-import { html, LitElement } from 'https://cdn.skypack.dev/lit?min';
+import { html, LitElement } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import canvasConfetti from 'https://cdn.skypack.dev/canvas-confetti';
 import { myStyles } from './styles.js';
 
