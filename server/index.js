@@ -5,12 +5,13 @@ const Session = require('./session');
 const Client = require('./client');
 const Game = require('./game');
 
-const server = new ws.Server({ port: process.env.WS_SERVER_PORT || 9000 });
+const server = new ws.Server({ port: process.env.EXPRESS_SERVER_PORT || 9000, path: '/ws' });
 const app = express();
 app.use(express.static('client'));
 const appServer = app.listen(process.env.EXPRESS_SERVER_PORT);
 console.log('Server listen on port ', process.env.EXPRESS_SERVER_PORT);
-console.log('WS listen on port ', process.env.WS_SERVER_PORT);
+console.log('WebSocketServer listen on port ', process.env.WS_SERVER_PORT);
+console.log(`WebSocketServer listen on path /ws`);
 
 const sessions = new Map();
 const games = new Map();
