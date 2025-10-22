@@ -1,16 +1,23 @@
 const process = require('process');
+const http = require('http');
 const express = require('express');
 const ws = require('ws');
 const Session = require('./session');
 const Client = require('./client');
 const Game = require('./game');
 
-const server = new ws.Server({ port: process.env.EXPRESS_SERVER_PORT || 9000, path: '/ws' });
 const app = express();
 app.use(express.static('client'));
-const appServer = app.listen(process.env.EXPRESS_SERVER_PORT);
+
+// Create a single HTTP server
+const server = http.createServer(app);
+
+// Create websocket server
+const wss = new ws.Server({ server, path: '/ws' });
+
+server.listen(process.env.EXPRESS_SERVER_PORT);
 console.log('Server listen on port ', process.env.EXPRESS_SERVER_PORT);
-console.log('WebSocketServer listen on port ', process.env.WS_SERVER_PORT);
+console.log('WebSocketServer listen on port ', process.env.EXPRESS_SERVER_PORT);
 console.log(`WebSocketServer listen on path /ws`);
 
 const sessions = new Map();
@@ -71,7 +78,7 @@ function broadcastSession(session) {
   });
 }
 
-server.on('connection', (ws) => {
+wss.on('connection', (ws) => {
   console.log('Connection established');
   const client = createClient(ws);
 
